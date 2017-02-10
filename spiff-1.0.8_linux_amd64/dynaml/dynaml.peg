@@ -1,0 +1,48 @@
+package dynaml
+
+type DynamlGrammar Peg {}
+
+Dynaml <- ws Expression ws !.
+
+Expression <- Level2
+
+Level2 <- Or / Level1
+
+Or <- Level1 req_ws '||' req_ws Expression
+
+Level1 <- Concatenation / Addition / Subtraction / Level0
+
+Concatenation <- Level0 [ \t\n\r]+ Level1
+Addition <- Level0 req_ws '+' req_ws Level1
+Subtraction <- Level0 req_ws '-' req_ws Level1
+
+Level0 <- Grouped / Call / Boolean / Nil / String / Integer / List / Merge / Auto / Reference
+
+Grouped <- '(' Expression ')'
+
+Call <- Name '(' Arguments ')'
+Arguments <- Expression (Comma ws Expression)*
+Name <- [a-zA-Z0-9_]+
+
+Comma <- ','
+
+Integer <- '-'? [0-9_]+
+
+String <- '"' ('\\"' / !'"' .)* '"'
+
+Boolean <- 'true' / 'false'
+
+Nil <- 'nil'
+
+List <- '[' Contents? ']'
+Contents <- Expression (Comma ws Expression)*
+
+Merge <- 'merge'
+
+Auto <- 'auto'
+
+Reference <- '.'? [a-zA-Z0-9_] [a-zA-Z0-9_\-]* ('.' [a-zA-Z0-9_] [a-zA-Z0-9_\-]* / '.' '[' [0-9]+ ']')*
+
+ws <- [ \t\n\r]*
+
+req_ws <- [ \t\n\r]+
